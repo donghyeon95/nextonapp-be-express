@@ -1,0 +1,111 @@
+plugins {
+    id 'java'
+    id 'jacoco'
+//    id "org.sonarqube" version "2.8" // sonarscanner for V&V팀
+}
+
+
+// V&V팀 테스트용
+//ext {
+//    sonarProject = "SMA_T2"
+//}
+
+group "SMA_T2"
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+//    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.2'
+}
+
+// V&V팀 테스트용
+//sonarqube {
+//    properties {
+//        property "sonar.host.url", "http://203.252.137.138:49000"
+//        property "sonar.projectKey", sonarProject
+//        property "sonar.projectName", sonarProject
+//    }
+//}
+
+test {
+    useJUnitPlatform()
+
+    finalizedBy 'jacocoTestReport'
+}
+
+jacoco {
+    toolVersion='0.8.5'
+    //  테스트결과 리포트를 저장할 경로 변경
+    //  default는 "${project.reporting.baseDir}/jacoco"
+    //  reportsDir = file("$buildDir/customJacocoReportDir")
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled = true
+
+        //  각 리포트 타입 마다 리포트 저장 경로를 설정할 수 있습니다.
+        //  html.destination file("$buildDir/jacocoHtml")
+        //  xml.destination file("$buildDir/jacoco.xml")
+    }
+//    finalizedBy 'jacocoTestCoverageVerification'
+}
+// 최소 coverage 만족 조건(rule, limit)
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+//            enabled=true
+
+            // 'element'가 없으면 프로젝트의 전체 파일을 합친 값을 기준으로 합니다.
+            // 위의 리포트에서 'Total'로 표시된 부분입니다.
+            limit {
+                // 'counter'를 지정하지 않으면 default는 'INSTRUCTION'
+                // 'value'를 지정하지 않으면 default는 'COVEREDRATIO'
+                minimum = 0.30
+            }
+        }
+
+        // 여러 룰을 생성할 수 있습니다.
+        rule {
+            // 룰을 간단히 켜고 끌 수 있습니다.
+            enabled = true
+
+            // 룰을 체크할 단위는 클래스 단위
+            element = 'CLASS'
+
+            // 커버리지 체크를 제외할 클래스들 (패키지 + 클래스명으로 명시)
+            excludes = [
+//                '**/Main',
+//                '*.Kotlin*'
+            ]
+            excludes = ["**/*.*Main*.*"]
+
+
+            // 브랜치 커버리지를 최소한 90% 만족시켜야 합니다.
+            limit {
+                counter = 'BRANCH'
+                value = 'COVEREDRATIO'
+                minimum = 0.90
+            }
+
+            // 라인 커버리지를 최소한 80% 만족시켜야 합니다.
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.80
+            }
+
+//            // 빈 줄을 제외한 코드의 라인수를 최대 200라인으로 제한합니다.
+//            limit {
+//                counter = 'LINE'
+//                value = 'TOTALCOUNT'
+//                maximum = 200
+//            }
+        }
+    }
+}
